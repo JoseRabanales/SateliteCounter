@@ -42,8 +42,8 @@
     <!-- Logo Image -->
     <ImageView
         android:id="@+id/logoImageView"
-        android:layout_width="389dp"
-        android:layout_height="wrap_content"
+        android:layout_width="331dp"
+        android:layout_height="120dp"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"
         android:src="@drawable/aerogri_logo" />
@@ -67,54 +67,82 @@
 
 
     <!-- Date Text -->
-    <TextView
-        android:id="@+id/dateText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/logoImageView"
-        android:layout_alignParentEnd="true"
-        android:layout_marginTop="35dp"
-        android:layout_marginEnd="20dp"
-        android:text="01/01/2024"
-        android:textColor="@android:color/black"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        />
 
     <!-- Counter Text -->
+    <!-- Device Name -->
+
+    <TextView
+        android:id="@+id/dateText"
+        android:layout_width="119dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/logoImageView"
+        android:layout_marginStart="52dp"
+        android:layout_marginTop="35dp"
+        android:layout_marginEnd="52dp"
+        android:layout_toStartOf="@+id/satText"
+        android:layout_toEndOf="@+id/timeText"
+        android:text="01/01/2024"
+        android:textAlignment="center"
+        android:textColor="@android:color/black"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
     <TextView
         android:id="@+id/counterText"
         android:layout_width="264dp"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/deviceName"
+        android:layout_below="@+id/bluetoothStatusCircletwo"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_marginStart="80dp"
-        android:layout_marginTop="65dp"
+        android:layout_marginTop="40dp"
         android:layout_marginEnd="80dp"
-        android:layout_marginBottom="262dp"
+        android:layout_marginBottom="273dp"
         android:text="0"
         android:textAlignment="center"
-        android:textSize="70sp"
-        android:textStyle="bold"
-        />
-    <!-- Device Name -->
+        android:textSize="80sp"
+        android:textStyle="bold" />
+
+    <View
+        android:id="@+id/bluetoothStatusCircletwo"
+        android:layout_width="256dp"
+        android:layout_height="68dp"
+        android:layout_below="@+id/logoImageView"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="80dp"
+        android:layout_marginTop="105dp"
+        android:layout_marginEnd="80dp"
+        android:background="@drawable/circle_background_relleno" />
+
     <TextView
         android:id="@+id/deviceName"
-        android:layout_width="190dp"
-        android:layout_height="21dp"
+        android:layout_width="133dp"
+        android:layout_height="22dp"
         android:layout_below="@+id/logoImageView"
         android:layout_alignParentEnd="true"
         android:layout_marginStart="18dp"
-        android:layout_marginTop="92dp"
-        android:layout_marginEnd="48dp"
+        android:layout_marginTop="127dp"
+        android:layout_marginEnd="122dp"
         android:layout_toEndOf="@+id/bluetoothStatusCircle"
         android:text="No conectado"
         android:textColor="@android:color/black"
         android:textSize="16sp" />
 
-    <TextView
+
+
+    <View
+        android:id="@+id/bluetoothStatusCircle"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_below="@+id/logoImageView"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="88dp"
+        android:layout_marginTop="113dp"
+        android:background="@drawable/circle_background" />
+
+    <ImageView
         android:id="@+id/bluetoothStatusText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -126,19 +154,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="15dp"
-        android:text="Off"
-        android:textColor="@android:color/black"
-        android:textSize="14sp" />
-
-    <View
-        android:id="@+id/bluetoothStatusCircle"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_below="@+id/logoImageView"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="105dp"
-        android:layout_marginTop="78dp"
-        android:background="@drawable/circle_background" />
+        android:src="@drawable/icon_bluetooth"/>
 
     <ImageButton
         android:id="@+id/incrementButton"
@@ -173,43 +189,52 @@
         android:background="@null"
         android:src="@drawable/left2" />
 
+
     <Button
         android:id="@+id/testButton"
-        android:layout_width="wrap_content"
+        android:layout_width="104dp"
         android:layout_height="40dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
         android:layout_marginStart="60dp"
         android:layout_marginBottom="48dp"
-        android:text="Test" />
+        android:text="Tester" />
 
+    <Button
+        android:id="@+id/exportNpastaButton"
+        android:layout_width="104dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="60dp"
+        android:layout_marginBottom="48dp"
+        android:text="Export" />
+
+    <TextView
+        android:id="@+id/secondCounterText"
+        android:layout_width="41dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/logoImageView"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="34dp"
+        android:layout_marginEnd="4dp"
+        android:text="0"
+        android:textColor="@android:color/black"
+        android:textSize="18sp"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/satText"
         android:layout_width="54dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_marginEnd="1dp"
-        android:layout_marginBottom="48dp"
+        android:layout_below="@+id/logoImageView"
+        android:layout_marginTop="35dp"
+        android:layout_marginEnd="-3dp"
         android:layout_toStartOf="@+id/secondCounterText"
         android:text="SAT"
         android:textAlignment="center"
         android:textColor="@android:color/black"
-        android:textSize="20sp" />
-
-    <TextView
-        android:id="@+id/secondCounterText"
-        android:layout_width="52dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginEnd="33dp"
-        android:layout_marginBottom="48dp"
-        android:text="0"
-        android:textColor="@android:color/black"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        />
+        android:textSize="18sp" />
 
     <ImageButton
         android:id="@+id/increment10Button"

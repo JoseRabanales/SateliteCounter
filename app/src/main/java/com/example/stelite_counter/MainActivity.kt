@@ -15,14 +15,17 @@ import android.os.Looper
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -35,12 +38,14 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private lateinit var bluetoothStatusCircle: View
-    private lateinit var bluetoothStatusText: TextView
+    private lateinit var bluetoothStatusText: ImageView
+    private lateinit var bluetoothStatusCircletwo: View
     private lateinit var incrementButton: ImageButton
     private lateinit var decrementButton: ImageButton
     private lateinit var increment10Button: ImageButton
     private lateinit var decrement10Button: ImageButton
     private lateinit var testButton: Button
+    private lateinit var exportNpastaButton:Button
     private lateinit var deviceName: TextView
     private lateinit var counterText: TextView
     private lateinit var secondCounterText: TextView
@@ -48,7 +53,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var dateText: TextView
 
     private var counter: Int = 0
-    private var secondCounter: Int = 6
+    private var secondCounter: Int = 0
     private var bluetoothSocket: BluetoothSocket? = null
     private var outputStream: OutputStream? = null
     private var inputStream: InputStream? = null
@@ -88,6 +93,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         setContentView(R.layout.activity_main)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -95,6 +101,7 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        bluetoothStatusCircletwo = findViewById(R.id.bluetoothStatusCircletwo)
         bluetoothStatusCircle = findViewById(R.id.bluetoothStatusCircle)
         bluetoothStatusText = findViewById(R.id.bluetoothStatusText)
         deviceName = findViewById(R.id.deviceName)
@@ -107,6 +114,7 @@ class MainActivity : AppCompatActivity() {
         increment10Button = findViewById(R.id.increment10Button)
         decrement10Button = findViewById(R.id.decrement10Button)
         testButton = findViewById(R.id.testButton)
+        exportNpastaButton = findViewById(R.id.exportNpastaButton)
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 
@@ -134,30 +142,40 @@ class MainActivity : AppCompatActivity() {
         incrementButton.setOnClickListener {
             counter++
             updateCounter()
-            sendCounterValue()
+            sendCounterValue("none")
         }
 
         decrementButton.setOnClickListener {
-            counter--
-            updateCounter()
-            sendCounterValue()
+            if (counter > 0) {
+                counter--
+                updateCounter()
+                sendCounterValue("none")
+            }
         }
 
         increment10Button.setOnClickListener {
             counter += 10
             updateCounter()
-            sendCounterValue()
+            sendCounterValue("none")
         }
 
         decrement10Button.setOnClickListener {
-            counter -= 10
-            updateCounter()
-            sendCounterValue()
+            if (counter >= 10) {
+                counter -= 10
+                updateCounter()
+                sendCounterValue("none")
+            }
         }
 
         testButton.setOnClickListener {
-            Toast.makeText(this, "Test Button Clicked", Toast.LENGTH_SHORT).show()
+            sendAction("teste")
         }
+
+        exportNpastaButton.setOnClickListener {
+            sendAction("export")
+        }
+
+
 
         val filter = IntentFilter().apply {
             addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
@@ -182,11 +200,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateUI(bluetoothEnabled: Boolean, device: String) {
         if (bluetoothEnabled) {
-            bluetoothStatusCircle.background.setTint(getColor(android.R.color.holo_green_light))
-            bluetoothStatusText.text = "On"
+            bluetoothStatusCircle.background = ContextCompat.getDrawable(this, R.drawable.bluetooth_status_border_green)
+            bluetoothStatusCircletwo.background.setTint(getColor(R.color.green_light))
         } else {
-            bluetoothStatusCircle.background.setTint(getColor(android.R.color.holo_red_light))
-            bluetoothStatusText.text = "Off"
+            bluetoothStatusCircle.background = ContextCompat.getDrawable(this, R.drawable.bluetooth_status_border)
+            bluetoothStatusCircletwo.background.setTint(getColor(R.color.red_light))
         }
         deviceName.text = device
     }
@@ -211,10 +229,21 @@ class MainActivity : AppCompatActivity() {
         dateText.text = currentDate
     }
 
-    private fun sendCounterValue() {
+    private fun sendCounterValue(action: String) {
+        val message = "$counter,$secondCounter,$action"
         outputStream?.let {
             try {
-                it.write(counter.toString().toByteArray())
+                it.write(message.toByteArray())
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun sendAction(action: String) {
+        outputStream?.let {
+            try {
+                it.write("$counter,$secondCounter,$action".toByteArray())
             } catch (e: IOException) {
                 e.printStackTrace()
             }
@@ -257,13 +286,30 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleIncomingData(data: String) {
-        val values = data.split(",").mapNotNull { it.toIntOrNull() }
-        if (values.size >= 2) {
-            counter = values[0]
-            secondCounter = values[1]
-            updateCounter()
-            updateSecondCounter()
+        val values = data.split(",")
+        if (values.size == 3) {
+            try {
+                counter = values[0].toInt()
+                secondCounter = values[1].toInt()
+                val action = values[2]
+                updateCounter()
+                updateSecondCounter()
+                // Manejar acción "export"
+                if (action == "export") {
+                    saveNpastaContent(data)
+                }
+                // No hacer nada si recibe "teste"
+            } catch (e: NumberFormatException) {
+                e.printStackTrace()
+            }
         }
+    }
+
+    private fun saveNpastaContent(content: String) {
+        val filename = "Npasta.txt"
+        val file = File(filesDir, filename)
+        file.writeText(content)
+        Toast.makeText(this, "Contenido guardado en $filename", Toast.LENGTH_SHORT).show()
     }
 
     private fun closeBluetoothConnection() {
