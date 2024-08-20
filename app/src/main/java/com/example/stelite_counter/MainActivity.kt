@@ -13,10 +13,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.View
-import android.widget.Button
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.*
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -45,8 +42,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var increment10Button: ImageButton
     private lateinit var decrement10Button: ImageButton
     private lateinit var testButton: Button
-    private lateinit var exportNpastaButton:Button
-    private lateinit var deviceName: TextView
+    private lateinit var exportNpastaButton: Button
+    private lateinit var deviceSpinner: Spinner
     private lateinit var counterText: TextView
     private lateinit var secondCounterText: TextView
     private lateinit var timeText: TextView
@@ -60,6 +57,9 @@ class MainActivity : AppCompatActivity() {
 
     private val MY_UUID: UUID = UUID.randomUUID()
 
+    private val deviceList: MutableList<BluetoothDevice> = ArrayList()
+    private lateinit var adapter: ArrayAdapter<String>
+
     private val bluetoothReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val action = intent.action
@@ -69,6 +69,16 @@ class MainActivity : AppCompatActivity() {
                     when (state) {
                         BluetoothAdapter.STATE_OFF -> updateUI(false, "No conectado")
                         BluetoothAdapter.STATE_ON -> updateUI(true, "No conectado")
+                    }
+                }
+                BluetoothDevice.ACTION_FOUND -> {
+                    val device: BluetoothDevice? = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+                    device?.let {
+                        if (!deviceList.contains(it)) {
+                            deviceList.add(it)
+                            adapter.add(it.name)
+                            adapter.notifyDataSetChanged()
+                        }
                     }
                 }
                 BluetoothDevice.ACTION_ACL_CONNECTED -> {
@@ -104,7 +114,7 @@ class MainActivity : AppCompatActivity() {
         bluetoothStatusCircletwo = findViewById(R.id.bluetoothStatusCircletwo)
         bluetoothStatusCircle = findViewById(R.id.bluetoothStatusCircle)
         bluetoothStatusText = findViewById(R.id.bluetoothStatusText)
-        deviceName = findViewById(R.id.deviceName)
+        deviceSpinner = findViewById(R.id.deviceSpinner)
         counterText = findViewById(R.id.counterText)
         secondCounterText = findViewById(R.id.secondCounterText)
         timeText = findViewById(R.id.timeText)
@@ -126,6 +136,34 @@ class MainActivity : AppCompatActivity() {
                 Manifest.permission.BLUETOOTH_SCAN,
                 Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_ENABLE_BT)
         }
+
+        // Configuración del Adapter para el Spinner
+        val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter.bondedDevices
+        pairedDevices?.forEach { device ->
+            deviceList.add(device)
+        }
+
+        val deviceNames = deviceList.map { it.name }.toMutableList()
+
+        adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, deviceNames)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        deviceSpinner.adapter = adapter
+
+        deviceSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                if (position >= 0 && position < deviceList.size) {
+                    val selectedDevice = deviceList[position]
+                    connectToDevice(selectedDevice)
+                } else {
+                    Toast.makeText(this@MainActivity, "Dispositivo no válido seleccionado", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                // No hacer nada
+            }
+        }
+
 
         bluetoothStatusCircle.setOnClickListener {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
@@ -181,8 +219,14 @@ class MainActivity : AppCompatActivity() {
             addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
             addAction(BluetoothDevice.ACTION_ACL_CONNECTED)
             addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED)
+            addAction(BluetoothDevice.ACTION_FOUND)
         }
         registerReceiver(bluetoothReceiver, filter)
+
+        // Iniciar descubrimiento de dispositivos
+        if (bluetoothAdapter.isEnabled) {
+            bluetoothAdapter.startDiscovery()
+        }
 
         // Initialize UI
         if (bluetoothAdapter.isEnabled) {
@@ -206,7 +250,7 @@ class MainActivity : AppCompatActivity() {
             bluetoothStatusCircle.background = ContextCompat.getDrawable(this, R.drawable.bluetooth_status_border)
             bluetoothStatusCircletwo.background.setTint(getColor(R.color.red_light))
         }
-        deviceName.text = device
+        // Actualización eliminada ya que el Spinner muestra los dispositivos
     }
 
     private fun updateCounter() {
@@ -230,43 +274,58 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun sendCounterValue(action: String) {
-        val message = "$counter,$secondCounter,$action"
-        outputStream?.let {
+        // Asegúrate de que la conexión Bluetooth está activa
+        if (bluetoothSocket?.isConnected == true) {
+            val message = "$counter,$secondCounter,$action"
             try {
-                it.write(message.toByteArray())
+                outputStream?.write(message.toByteArray())
+                Toast.makeText(this, "Datos enviados: $message", Toast.LENGTH_SHORT).show()
             } catch (e: IOException) {
                 e.printStackTrace()
+                Toast.makeText(this, "Error al enviar datos: ${e.message}", Toast.LENGTH_SHORT).show()
             }
+        } else {
+            Toast.makeText(this, "No conectado a ningún dispositivo", Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun sendAction(action: String) {
-        outputStream?.let {
-            try {
-                it.write("$counter,$secondCounter,$action".toByteArray())
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
-        }
+        sendCounterValue(action)
     }
 
     private fun connectToDevice(device: BluetoothDevice) {
+        // Asegúrate de que se ejecute en un hilo separado
         Thread {
             try {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.BLUETOOTH_CONNECT), REQUEST_ENABLE_BT)
+                    return@Thread
+                }
                 bluetoothSocket = device.createRfcommSocketToServiceRecord(MY_UUID)
+                bluetoothAdapter.cancelDiscovery()
                 bluetoothSocket?.connect()
+
                 outputStream = bluetoothSocket?.outputStream
                 inputStream = bluetoothSocket?.inputStream
+
                 Handler(Looper.getMainLooper()).post {
                     Toast.makeText(this, "Conectado a ${device.name}", Toast.LENGTH_SHORT).show()
                 }
-                listenForIncomingData() // Start listening for incoming data
+
+                listenForIncomingData()
+
             } catch (e: IOException) {
                 e.printStackTrace()
+                // Cerrar la conexión en caso de error
                 closeBluetoothConnection()
+                // Mostrar un mensaje de error en el hilo principal
+                Handler(Looper.getMainLooper()).post {
+                    Toast.makeText(this, "Error al conectar con el dispositivo: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
             }
         }.start()
     }
+
 
     private fun listenForIncomingData() {
         val buffer = ByteArray(1024)
