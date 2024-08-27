@@ -39,6 +39,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var secondCounterText: TextView
     private lateinit var timeText: TextView
     private lateinit var dateText: TextView
+    private lateinit var UUIDService: UUID
+    private lateinit var UUIDChar: UUID
+    private lateinit var UUIDServiceTX: UUID
+    private lateinit var UUIDCharTX: UUID
+    private lateinit var UUIDServiceRX: UUID
+    private lateinit var UUIDCharRX: UUID
 
     private var counter: Int = 0
     private var secondCounter: Int = 0
@@ -166,37 +172,43 @@ class MainActivity : AppCompatActivity() {
         incrementButton.setOnClickListener {
             counter++
             updateCounter()
-            sendCounterValue("none")
+            val data = "$counter,$secondCounter,none"
+            sendValue(data)
         }
 
         decrementButton.setOnClickListener {
             if (counter > 0) {
                 counter--
                 updateCounter()
-                sendCounterValue("none")
+                val data = "$counter,$secondCounter,none"
+                sendValue(data)
             }
         }
 
         increment10Button.setOnClickListener {
             counter += 10
             updateCounter()
-            sendCounterValue("none")
+            val data = "$counter,$secondCounter,none"
+            sendValue(data)
         }
 
         decrement10Button.setOnClickListener {
             if (counter >= 10) {
                 counter -= 10
                 updateCounter()
-                sendCounterValue("none")
+                val data = "$counter,$secondCounter,none"
+                sendValue(data)
             }
         }
 
         testButton.setOnClickListener {
-            sendAction("test")
+            val data = "$counter,$secondCounter,test"
+            sendValue(data)
         }
 
         exportNpastaButton.setOnClickListener {
-            sendAction("export")
+            val data = "$counter,$secondCounter,export"
+            sendValue(data)
         }
 
         val filter = IntentFilter().apply {
@@ -290,8 +302,10 @@ class MainActivity : AppCompatActivity() {
                         // Conexión exitosa
                         updateUI(true, gatt?.device?.name ?: "Desconocido")
                         Toast.makeText(this@MainActivity, "Conectado a ${gatt?.device?.name}", Toast.LENGTH_SHORT).show()
+
+                        // Descubrir servicios disponibles en el dispositivo BLE
+                        gatt?.discoverServices()
                     }
-                    gatt?.discoverServices()  // Descubrir servicios disponibles en el dispositivo BLE
                 }
                 BluetoothProfile.STATE_DISCONNECTED -> {
                     runOnUiThread {
@@ -312,23 +326,91 @@ class MainActivity : AppCompatActivity() {
         override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
             super.onServicesDiscovered(gatt, status)
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                // Servicios descubiertos exitosamente
-                // Aquí puedes interactuar con los servicios y características del dispositivo
-            } else {
-                runOnUiThread {
-                    Toast.makeText(this@MainActivity, "Error al descubrir servicios: $status", Toast.LENGTH_SHORT).show()
+                gatt?.let {
+                    // Variables para almacenar las características TX y RX
+                    var rxCharacteristic: BluetoothGattCharacteristic? = null
+                    var txCharacteristic: BluetoothGattCharacteristic? = null
+
+                    // Iterar sobre los servicios descubiertos
+                    for (service in it.services) {
+                        println("Servicio descubierto: ${service.uuid}")
+
+                        // Iterar sobre las características del servicio
+                        for (characteristic in service.characteristics) {
+                            println("  Característica descubierta: ${characteristic.uuid}")
+
+                            // Verificar si es la característica TX
+                            if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_WRITE != 0) {
+                                txCharacteristic = characteristic
+                                UUIDCharTX = characteristic.uuid  // Asignar la característica TX a la variable global
+                                UUIDServiceTX = service.uuid  // Asignar el servicio a la variable global
+                                println("  -> Característica TX encontrada")
+                            }
+                            // Verificar si es la característica RX
+                            if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY != 0 ||
+                                characteristic.properties and BluetoothGattCharacteristic.PROPERTY_READ != 0) {
+                                rxCharacteristic = characteristic
+                                UUIDCharRX = characteristic.uuid  // Asignar la característica RX a la variable global
+                                UUIDServiceRX = service.uuid  // Asignar el servicio a la variable global
+                                println("  -> Característica RX encontrada")
+                            }
+                        }
+
+                        // Si encontramos tanto RX como TX, configurar notificaciones y salir del bucle
+                        if (rxCharacteristic != null && txCharacteristic != null) {
+                            // Habilitar notificaciones en RX
+                            gatt.setCharacteristicNotification(rxCharacteristic, true)
+
+                            val descriptor = rxCharacteristic.getDescriptor(
+                                UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")  // UUID del descriptor de notificación
+                            )
+                            descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                            gatt.writeDescriptor(descriptor)
+
+                            Toast.makeText(this@MainActivity, "Servicios y características configurados", Toast.LENGTH_SHORT).show()
+                            break  // Salir del bucle una vez que hemos encontrado lo que necesitamos
+                        }
+                    }
+
+                    if (rxCharacteristic == null || txCharacteristic == null) {
+                        Toast.makeText(this@MainActivity, "No se encontraron características RX/TX válidas", Toast.LENGTH_SHORT).show()
+                    }
                 }
+            } else {
+                Toast.makeText(this@MainActivity, "Error al descubrir servicios: $status", Toast.LENGTH_SHORT).show()
             }
         }
 
-        override fun onCharacteristicRead(
+        override fun onCharacteristicChanged(
             gatt: BluetoothGatt?,
-            characteristic: BluetoothGattCharacteristic?,
-            status: Int
+            characteristic: BluetoothGattCharacteristic?
         ) {
-            super.onCharacteristicRead(gatt, characteristic, status)
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                // Manejar la lectura de características
+            super.onCharacteristicChanged(gatt, characteristic)
+            characteristic?.let {
+                val value = it.value // Valor en bytes recibido
+                val stringValue = String(value) // Convertir a string
+
+                runOnUiThread {
+                    // Procesar la cadena recibida
+                    val values = stringValue.split(",") // Separar por comas
+
+                    if (values.size >= 2) {
+                        try {
+                            // Asignar los valores
+                            counter = values[0].toInt()
+                            secondCounter = values[1].toInt()
+
+                            // Actualizar la UI con los nuevos valores
+                            updateCounter()
+                        } catch (e: NumberFormatException) {
+                            // Manejar la excepción si los valores no se pueden convertir a entero
+                            Toast.makeText(this@MainActivity, "Error al convertir los valores: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        // Si la cadena no contiene los valores esperados
+                        Toast.makeText(this@MainActivity, "Datos incompletos recibidos", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
         }
 
@@ -338,8 +420,19 @@ class MainActivity : AppCompatActivity() {
             status: Int
         ) {
             super.onCharacteristicWrite(gatt, characteristic, status)
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                // Manejar la escritura de características
+            runOnUiThread {
+                if (status == BluetoothGatt.GATT_SUCCESS) {
+                    Toast.makeText(this@MainActivity, "Valor escrito exitosamente", Toast.LENGTH_SHORT).show()
+                } else {
+                    val errorMessage = when (status) {
+                        BluetoothGatt.GATT_WRITE_NOT_PERMITTED -> "Escritura no permitida"
+                        BluetoothGatt.GATT_INSUFFICIENT_AUTHENTICATION -> "Autenticación insuficiente"
+                        BluetoothGatt.GATT_REQUEST_NOT_SUPPORTED -> "Solicitud no soportada"
+                        BluetoothGatt.GATT_INSUFFICIENT_ENCRYPTION -> "Encriptación insuficiente"
+                        else -> "Error desconocido: $status"
+                    }
+                    Toast.makeText(this@MainActivity, "Error al escribir característica: $errorMessage", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -350,12 +443,35 @@ class MainActivity : AppCompatActivity() {
         bluetoothGatt = null
     }
 
-    private fun sendCounterValue(value: String) {
-        // Implementar el envío del valor del contador al dispositivo BLE
-    }
+    private fun sendValue(value: String) {
+        val valueBytes = value.toByteArray()
 
-    private fun sendAction(action: String) {
-        // Implementar el envío de la acción al dispositivo BLE
+        bluetoothGatt?.let { gatt ->
+            val service = gatt.getService(UUIDServiceTX)
+            if (service != null) {
+                val txCharacteristic = service.getCharacteristic(UUIDCharTX)
+
+                if (txCharacteristic != null) {
+                    txCharacteristic.value = valueBytes
+
+                    // Verificar las propiedades antes de escribir
+                    if (txCharacteristic.properties and BluetoothGattCharacteristic.PROPERTY_WRITE != 0) {
+                        val success = gatt.writeCharacteristic(txCharacteristic)
+                        if (!success) {
+                            Toast.makeText(this, "Error al iniciar la escritura", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        Toast.makeText(this, "La característica TX no admite escritura", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Toast.makeText(this, "Característica TX no encontrada", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(this, "Servicio TX no encontrado", Toast.LENGTH_SHORT).show()
+            }
+        } ?: run {
+            Toast.makeText(this, "BluetoothGatt no disponible", Toast.LENGTH_SHORT).show()
+        }
     }
 
     companion object {
