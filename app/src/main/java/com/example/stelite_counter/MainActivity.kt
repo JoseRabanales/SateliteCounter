@@ -1,9 +1,7 @@
 package com.example.stelite_counter
 
 import android.Manifest
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothSocket
+import android.bluetooth.*
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -14,7 +12,6 @@ import android.os.Handler
 import android.os.Looper
 import android.view.View
 import android.widget.*
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -22,14 +19,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import java.io.File
-import java.io.IOException
-import java.io.InputStream
-import java.io.OutputStream
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import java.util.UUID
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -51,11 +42,7 @@ class MainActivity : AppCompatActivity() {
 
     private var counter: Int = 0
     private var secondCounter: Int = 0
-    private var bluetoothSocket: BluetoothSocket? = null
-    private var outputStream: OutputStream? = null
-    private var inputStream: InputStream? = null
-
-    private val MY_UUID: UUID = UUID.randomUUID()
+    private var bluetoothGatt: BluetoothGatt? = null
 
     private val deviceList: MutableList<BluetoothDevice> = ArrayList()
     private lateinit var adapter: ArrayAdapter<String>
@@ -164,7 +151,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-
         bluetoothStatusCircle.setOnClickListener {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
                 if (bluetoothAdapter.isEnabled) {
@@ -206,14 +192,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         testButton.setOnClickListener {
-            sendAction("teste")
+            sendAction("test")
         }
 
         exportNpastaButton.setOnClickListener {
             sendAction("export")
         }
-
-
 
         val filter = IntentFilter().apply {
             addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
@@ -250,7 +234,6 @@ class MainActivity : AppCompatActivity() {
             bluetoothStatusCircle.background = ContextCompat.getDrawable(this, R.drawable.bluetooth_status_border)
             bluetoothStatusCircletwo.background.setTint(getColor(R.color.red_light))
         }
-        // Actualización eliminada ya que el Spinner muestra los dispositivos
     }
 
     private fun updateCounter() {
@@ -264,130 +247,124 @@ class MainActivity : AppCompatActivity() {
         } else {
             secondCounterText.setTextColor(getColor(android.R.color.holo_red_light))
         }
+        secondCounter = 0
+        Handler(Looper.getMainLooper()).postDelayed({
+            updateSecondCounter()
+        }, 1000)
     }
 
     private fun updateTimeAndDate() {
-        val currentTime = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
-        val currentDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
-        timeText.text = currentTime
-        dateText.text = currentDate
-    }
-
-    private fun sendCounterValue(action: String) {
-        // Asegúrate de que la conexión Bluetooth está activa
-        if (bluetoothSocket?.isConnected == true) {
-            val message = "$counter,$secondCounter,$action"
-            try {
-                outputStream?.write(message.toByteArray())
-                Toast.makeText(this, "Datos enviados: $message", Toast.LENGTH_SHORT).show()
-            } catch (e: IOException) {
-                e.printStackTrace()
-                Toast.makeText(this, "Error al enviar datos: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-        } else {
-            Toast.makeText(this, "No conectado a ningún dispositivo", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun sendAction(action: String) {
-        sendCounterValue(action)
+        val currentTime = Calendar.getInstance().time
+        val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+        dateText.text = dateFormat.format(currentTime)
+        timeText.text = timeFormat.format(currentTime)
     }
 
     private fun connectToDevice(device: BluetoothDevice) {
-        // Asegúrate de que se ejecute en un hilo separado
-        Thread {
-            try {
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.BLUETOOTH_CONNECT), REQUEST_ENABLE_BT)
-                    return@Thread
-                }
-                bluetoothSocket = device.createRfcommSocketToServiceRecord(MY_UUID)
-                bluetoothAdapter.cancelDiscovery()
-                bluetoothSocket?.connect()
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // Solicitar permisos si no están concedidos
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.BLUETOOTH_CONNECT),
+                REQUEST_ENABLE_BT
+            )
+            return
+        }
 
-                outputStream = bluetoothSocket?.outputStream
-                inputStream = bluetoothSocket?.inputStream
-
-                Handler(Looper.getMainLooper()).post {
-                    Toast.makeText(this, "Conectado a ${device.name}", Toast.LENGTH_SHORT).show()
-                }
-
-                listenForIncomingData()
-
-            } catch (e: IOException) {
-                e.printStackTrace()
-                // Cerrar la conexión en caso de error
-                closeBluetoothConnection()
-                // Mostrar un mensaje de error en el hilo principal
-                Handler(Looper.getMainLooper()).post {
-                    Toast.makeText(this, "Error al conectar con el dispositivo: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }.start()
+        // Intentar conectar al dispositivo BLE
+        bluetoothGatt = device.connectGatt(this, false, gattCallback)
     }
 
+    private val gattCallback = object : BluetoothGattCallback() {
+        override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
+            super.onConnectionStateChange(gatt, status, newState)
 
-    private fun listenForIncomingData() {
-        val buffer = ByteArray(1024)
-        var bytes: Int
+            when (newState) {
+                BluetoothProfile.STATE_CONNECTED -> {
+                    runOnUiThread {
+                        // Conexión exitosa
+                        updateUI(true, gatt?.device?.name ?: "Desconocido")
+                        Toast.makeText(this@MainActivity, "Conectado a ${gatt?.device?.name}", Toast.LENGTH_SHORT).show()
+                    }
+                    gatt?.discoverServices()  // Descubrir servicios disponibles en el dispositivo BLE
+                }
+                BluetoothProfile.STATE_DISCONNECTED -> {
+                    runOnUiThread {
+                        // Desconexión
+                        updateUI(true, "No conectado")
+                        Toast.makeText(this@MainActivity, "Desconectado", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                else -> {
+                    runOnUiThread {
+                        // Error en la conexión
+                        Toast.makeText(this@MainActivity, "Error de conexión: $status", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
 
-        try {
-            while (true) {
-                bytes = inputStream?.read(buffer) ?: break
-                val incomingMessage = String(buffer, 0, bytes)
+        override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
+            super.onServicesDiscovered(gatt, status)
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                // Servicios descubiertos exitosamente
+                // Aquí puedes interactuar con los servicios y características del dispositivo
+            } else {
                 runOnUiThread {
-                    handleIncomingData(incomingMessage)
+                    Toast.makeText(this@MainActivity, "Error al descubrir servicios: $status", Toast.LENGTH_SHORT).show()
                 }
             }
-        } catch (e: IOException) {
-            e.printStackTrace()
+        }
+
+        override fun onCharacteristicRead(
+            gatt: BluetoothGatt?,
+            characteristic: BluetoothGattCharacteristic?,
+            status: Int
+        ) {
+            super.onCharacteristicRead(gatt, characteristic, status)
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                // Manejar la lectura de características
+            }
+        }
+
+        override fun onCharacteristicWrite(
+            gatt: BluetoothGatt?,
+            characteristic: BluetoothGattCharacteristic?,
+            status: Int
+        ) {
+            super.onCharacteristicWrite(gatt, characteristic, status)
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                // Manejar la escritura de características
+            }
         }
     }
 
-    private fun handleIncomingData(data: String) {
-        val values = data.split(",")
-        if (values.size == 3) {
-            try {
-                counter = values[0].toInt()
-                secondCounter = values[1].toInt()
-                val action = values[2]
-                updateCounter()
-                updateSecondCounter()
-                // Manejar acción "export"
-                if (action == "export") {
-                    saveNpastaContent(data)
-                }
-                // No hacer nada si recibe "teste"
-            } catch (e: NumberFormatException) {
-                e.printStackTrace()
-            }
-        }
-    }
-
-    private fun saveNpastaContent(content: String) {
-        val filename = "Npasta.txt"
-        val file = File(filesDir, filename)
-        file.writeText(content)
-        Toast.makeText(this, "Contenido guardado en $filename", Toast.LENGTH_SHORT).show()
-    }
 
     private fun closeBluetoothConnection() {
-        try {
-            outputStream?.close()
-            inputStream?.close()
-            bluetoothSocket?.close()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
+        bluetoothGatt?.close()
+        bluetoothGatt = null
+    }
+
+    private fun sendCounterValue(value: String) {
+        // Implementar el envío del valor del contador al dispositivo BLE
+    }
+
+    private fun sendAction(action: String) {
+        // Implementar el envío de la acción al dispositivo BLE
+    }
+
+    companion object {
+        private const val REQUEST_ENABLE_BT = 1
     }
 
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(bluetoothReceiver)
         closeBluetoothConnection()
-    }
-
-    companion object {
-        private const val REQUEST_ENABLE_BT = 1
     }
 }
