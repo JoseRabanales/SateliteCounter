@@ -33,14 +33,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var increment10Button: ImageButton
     private lateinit var decrement10Button: ImageButton
     private lateinit var testButton: Button
+    private lateinit var resetButton: ImageView
     private lateinit var exportNpastaButton: Button
     private lateinit var deviceSpinner: Spinner
     private lateinit var counterText: TextView
     private lateinit var secondCounterText: TextView
     private lateinit var timeText: TextView
     private lateinit var dateText: TextView
-    private lateinit var UUIDService: UUID
-    private lateinit var UUIDChar: UUID
     private lateinit var UUIDServiceTX: UUID
     private lateinit var UUIDCharTX: UUID
     private lateinit var UUIDServiceRX: UUID
@@ -58,14 +57,17 @@ class MainActivity : AppCompatActivity() {
             val action = intent.action
             when (action) {
                 BluetoothAdapter.ACTION_STATE_CHANGED -> {
-                    val state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR)
+                    val state =
+                        intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR)
                     when (state) {
                         BluetoothAdapter.STATE_OFF -> updateUI(false, "No conectado")
                         BluetoothAdapter.STATE_ON -> updateUI(true, "No conectado")
                     }
                 }
+
                 BluetoothDevice.ACTION_FOUND -> {
-                    val device: BluetoothDevice? = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+                    val device: BluetoothDevice? =
+                        intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
                     device?.let {
                         if (!deviceList.contains(it)) {
                             deviceList.add(it)
@@ -74,17 +76,28 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 }
+
                 BluetoothDevice.ACTION_ACL_CONNECTED -> {
-                    val device: BluetoothDevice? = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+                    val device: BluetoothDevice? =
+                        intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
                     device?.let {
-                        if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                            ActivityCompat.requestPermissions(this@MainActivity, arrayOf(Manifest.permission.BLUETOOTH_CONNECT), REQUEST_ENABLE_BT)
+                        if (ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.BLUETOOTH_CONNECT
+                            ) != PackageManager.PERMISSION_GRANTED
+                        ) {
+                            ActivityCompat.requestPermissions(
+                                this@MainActivity,
+                                arrayOf(Manifest.permission.BLUETOOTH_CONNECT),
+                                REQUEST_ENABLE_BT
+                            )
                             return
                         }
                         updateUI(true, device.name ?: "Dispositivo desconocido")
                         connectToDevice(device)
                     }
                 }
+
                 BluetoothDevice.ACTION_ACL_DISCONNECTED -> {
                     updateUI(true, "No conectado")
                     closeBluetoothConnection()
@@ -117,17 +130,28 @@ class MainActivity : AppCompatActivity() {
         increment10Button = findViewById(R.id.increment10Button)
         decrement10Button = findViewById(R.id.decrement10Button)
         testButton = findViewById(R.id.testButton)
+        resetButton = findViewById(R.id.resetButton)
         exportNpastaButton = findViewById(R.id.exportNpastaButton)
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) != PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.BLUETOOTH_SCAN
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
 
-            ActivityCompat.requestPermissions(this, arrayOf(
-                Manifest.permission.BLUETOOTH_CONNECT,
-                Manifest.permission.BLUETOOTH_SCAN,
-                Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_ENABLE_BT)
+            ActivityCompat.requestPermissions(
+                this, arrayOf(
+                    Manifest.permission.BLUETOOTH_CONNECT,
+                    Manifest.permission.BLUETOOTH_SCAN,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ), REQUEST_ENABLE_BT
+            )
         }
 
         // Configuración del Adapter para el Spinner
@@ -143,12 +167,21 @@ class MainActivity : AppCompatActivity() {
         deviceSpinner.adapter = adapter
 
         deviceSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
                 if (position >= 0 && position < deviceList.size) {
                     val selectedDevice = deviceList[position]
                     connectToDevice(selectedDevice)
                 } else {
-                    Toast.makeText(this@MainActivity, "Dispositivo no válido seleccionado", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Dispositivo no válido seleccionado",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
 
@@ -158,7 +191,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         bluetoothStatusCircle.setOnClickListener {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
                 if (bluetoothAdapter.isEnabled) {
                     bluetoothAdapter.disable()
                 } else {
@@ -170,45 +207,66 @@ class MainActivity : AppCompatActivity() {
         }
 
         incrementButton.setOnClickListener {
-            counter++
-            updateCounter()
-            val data = "$counter,$secondCounter,none"
-            sendValue(data)
+            Handler(Looper.getMainLooper()).postDelayed({
+                counter++
+                updateCounter()
+                val data = "$counter,$secondCounter,none"
+                sendValue(data)
+            }, 1000)
         }
 
         decrementButton.setOnClickListener {
-            if (counter > 0) {
-                counter--
-                updateCounter()
-                val data = "$counter,$secondCounter,none"
-                sendValue(data)
-            }
+            Handler(Looper.getMainLooper()).postDelayed({
+                if (counter > 0) {
+                    counter--
+                    updateCounter()
+                    val data = "$counter,$secondCounter,none"
+                    sendValue(data)
+                }
+            }, 1000)
         }
 
         increment10Button.setOnClickListener {
-            counter += 10
-            updateCounter()
-            val data = "$counter,$secondCounter,none"
-            sendValue(data)
-        }
-
-        decrement10Button.setOnClickListener {
-            if (counter >= 10) {
-                counter -= 10
+            Handler(Looper.getMainLooper()).postDelayed({
+                counter += 10
                 updateCounter()
                 val data = "$counter,$secondCounter,none"
                 sendValue(data)
-            }
+            }, 1000)
+        }
+
+        decrement10Button.setOnClickListener {
+            Handler(Looper.getMainLooper()).postDelayed({
+                if (counter >= 10) {
+                    counter -= 10
+                    updateCounter()
+                    val data = "$counter,$secondCounter,none"
+                    sendValue(data)
+                }
+            }, 1000)
         }
 
         testButton.setOnClickListener {
-            val data = "$counter,$secondCounter,test"
-            sendValue(data)
+            Handler(Looper.getMainLooper()).postDelayed({
+                val data = "$counter,$secondCounter,teste"
+                sendValue(data)
+            }, 1000)
+        }
+
+        resetButton.setOnClickListener {
+            Handler(Looper.getMainLooper()).postDelayed({
+
+                val data = "$counter,$secondCounter,reset"
+                sendValue(data)
+            }, 1000)
         }
 
         exportNpastaButton.setOnClickListener {
-            val data = "$counter,$secondCounter,export"
-            sendValue(data)
+            Handler(Looper.getMainLooper()).postDelayed({
+                val data = "$counter,$secondCounter,export"
+                sendValue(data)
+            }, 1000)
+
         }
 
         val filter = IntentFilter().apply {
@@ -240,10 +298,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateUI(bluetoothEnabled: Boolean, device: String) {
         if (bluetoothEnabled) {
-            bluetoothStatusCircle.background = ContextCompat.getDrawable(this, R.drawable.bluetooth_status_border_green)
+            bluetoothStatusCircle.background =
+                ContextCompat.getDrawable(this, R.drawable.bluetooth_status_border_green)
             bluetoothStatusCircletwo.background.setTint(getColor(R.color.green_light))
         } else {
-            bluetoothStatusCircle.background = ContextCompat.getDrawable(this, R.drawable.bluetooth_status_border)
+            bluetoothStatusCircle.background =
+                ContextCompat.getDrawable(this, R.drawable.bluetooth_status_border)
             bluetoothStatusCircletwo.background.setTint(getColor(R.color.red_light))
         }
     }
@@ -301,12 +361,17 @@ class MainActivity : AppCompatActivity() {
                     runOnUiThread {
                         // Conexión exitosa
                         updateUI(true, gatt?.device?.name ?: "Desconocido")
-                        Toast.makeText(this@MainActivity, "Conectado a ${gatt?.device?.name}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Conectado a ${gatt?.device?.name}",
+                            Toast.LENGTH_SHORT
+                        ).show()
 
                         // Descubrir servicios disponibles en el dispositivo BLE
                         gatt?.discoverServices()
                     }
                 }
+
                 BluetoothProfile.STATE_DISCONNECTED -> {
                     runOnUiThread {
                         // Desconexión
@@ -314,10 +379,15 @@ class MainActivity : AppCompatActivity() {
                         Toast.makeText(this@MainActivity, "Desconectado", Toast.LENGTH_SHORT).show()
                     }
                 }
+
                 else -> {
                     runOnUiThread {
                         // Error en la conexión
-                        Toast.makeText(this@MainActivity, "Error de conexión: $status", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Error de conexión: $status",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
             }
@@ -337,21 +407,26 @@ class MainActivity : AppCompatActivity() {
 
                         // Iterar sobre las características del servicio
                         for (characteristic in service.characteristics) {
-                            println("  Característica descubierta: ${characteristic.uuid}")
+                            println("Característica descubierta: ${characteristic.uuid}")
 
                             // Verificar si es la característica TX
                             if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_WRITE != 0) {
                                 txCharacteristic = characteristic
-                                UUIDCharTX = characteristic.uuid  // Asignar la característica TX a la variable global
-                                UUIDServiceTX = service.uuid  // Asignar el servicio a la variable global
+                                UUIDCharTX =
+                                    characteristic.uuid  // Asignar la característica TX a la variable global
+                                UUIDServiceTX =
+                                    service.uuid  // Asignar el servicio a la variable global
                                 println("  -> Característica TX encontrada")
                             }
                             // Verificar si es la característica RX
                             if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY != 0 ||
-                                characteristic.properties and BluetoothGattCharacteristic.PROPERTY_READ != 0) {
+                                characteristic.properties and BluetoothGattCharacteristic.PROPERTY_READ != 0
+                            ) {
                                 rxCharacteristic = characteristic
-                                UUIDCharRX = characteristic.uuid  // Asignar la característica RX a la variable global
-                                UUIDServiceRX = service.uuid  // Asignar el servicio a la variable global
+                                UUIDCharRX =
+                                    characteristic.uuid  // Asignar la característica RX a la variable global
+                                UUIDServiceRX =
+                                    service.uuid  // Asignar el servicio a la variable global
                                 println("  -> Característica RX encontrada")
                             }
                         }
@@ -367,17 +442,29 @@ class MainActivity : AppCompatActivity() {
                             descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
                             gatt.writeDescriptor(descriptor)
 
-                            Toast.makeText(this@MainActivity, "Servicios y características configurados", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this@MainActivity,
+                                "Servicios y características configurados",
+                                Toast.LENGTH_SHORT
+                            ).show()
                             break  // Salir del bucle una vez que hemos encontrado lo que necesitamos
                         }
                     }
 
                     if (rxCharacteristic == null || txCharacteristic == null) {
-                        Toast.makeText(this@MainActivity, "No se encontraron características RX/TX válidas", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@MainActivity,
+                            "No se encontraron características RX/TX válidas",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
             } else {
-                Toast.makeText(this@MainActivity, "Error al descubrir servicios: $status", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@MainActivity,
+                    "Error al descubrir servicios: $status",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
@@ -404,11 +491,19 @@ class MainActivity : AppCompatActivity() {
                             updateCounter()
                         } catch (e: NumberFormatException) {
                             // Manejar la excepción si los valores no se pueden convertir a entero
-                            Toast.makeText(this@MainActivity, "Error al convertir los valores: ${e.message}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this@MainActivity,
+                                "Error al convertir los valores: ${e.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     } else {
                         // Si la cadena no contiene los valores esperados
-                        Toast.makeText(this@MainActivity, "Datos incompletos recibidos", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Datos incompletos recibidos",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
             }
@@ -422,7 +517,11 @@ class MainActivity : AppCompatActivity() {
             super.onCharacteristicWrite(gatt, characteristic, status)
             runOnUiThread {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
-                    Toast.makeText(this@MainActivity, "Valor escrito exitosamente", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Valor escrito exitosamente",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 } else {
                     val errorMessage = when (status) {
                         BluetoothGatt.GATT_WRITE_NOT_PERMITTED -> "Escritura no permitida"
@@ -431,7 +530,11 @@ class MainActivity : AppCompatActivity() {
                         BluetoothGatt.GATT_INSUFFICIENT_ENCRYPTION -> "Encriptación insuficiente"
                         else -> "Error desconocido: $status"
                     }
-                    Toast.makeText(this@MainActivity, "Error al escribir característica: $errorMessage", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Error al escribir característica: $errorMessage",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
@@ -447,9 +550,9 @@ class MainActivity : AppCompatActivity() {
         val valueBytes = value.toByteArray()
 
         bluetoothGatt?.let { gatt ->
-            val service = gatt.getService(UUIDServiceTX)
+            val service = gatt.getService(UUIDServiceRX)
             if (service != null) {
-                val txCharacteristic = service.getCharacteristic(UUIDCharTX)
+                val txCharacteristic = service.getCharacteristic(UUIDCharRX)
 
                 if (txCharacteristic != null) {
                     txCharacteristic.value = valueBytes
@@ -458,13 +561,22 @@ class MainActivity : AppCompatActivity() {
                     if (txCharacteristic.properties and BluetoothGattCharacteristic.PROPERTY_WRITE != 0) {
                         val success = gatt.writeCharacteristic(txCharacteristic)
                         if (!success) {
-                            Toast.makeText(this, "Error al iniciar la escritura", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this,
+                                "Error al iniciar la escritura",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     } else {
-                        Toast.makeText(this, "La característica TX no admite escritura", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this,
+                            "La característica TX no admite escritura",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 } else {
-                    Toast.makeText(this, "Característica TX no encontrada", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Característica TX no encontrada", Toast.LENGTH_SHORT)
+                        .show()
                 }
             } else {
                 Toast.makeText(this, "Servicio TX no encontrado", Toast.LENGTH_SHORT).show()

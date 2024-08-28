@@ -162,7 +162,7 @@
         android:layout_height="wrap_content"
         android:layout_above="@+id/increment10Button"
         android:layout_alignParentEnd="true"
-        android:layout_marginEnd="60dp"
+        android:layout_marginEnd="55dp"
         android:layout_marginBottom="11dp"
         android:background="@null"
         android:src="@drawable/rigth1" />
@@ -173,7 +173,7 @@
         android:layout_height="wrap_content"
         android:layout_above="@+id/decrement10Button"
         android:layout_alignParentStart="true"
-        android:layout_marginStart="60dp"
+        android:layout_marginStart="55dp"
         android:layout_marginBottom="11dp"
         android:background="@null"
         android:src="@drawable/left1" />
@@ -184,7 +184,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginStart="60dp"
+        android:layout_marginStart="55dp"
         android:layout_marginBottom="152dp"
         android:background="@null"
         android:src="@drawable/left2" />
@@ -196,7 +196,7 @@
         android:layout_height="40dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginStart="60dp"
+        android:layout_marginStart="55dp"
         android:layout_marginBottom="48dp"
         android:text="Tester" />
 
@@ -206,9 +206,22 @@
         android:layout_height="40dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginEnd="60dp"
+        android:layout_marginEnd="55dp"
         android:layout_marginBottom="48dp"
         android:text="Export" />
+
+    <ImageView
+        android:id="@+id/resetButton"
+        android:layout_width="77dp"
+        android:layout_height="61dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="164dp"
+        android:layout_marginEnd="170dp"
+        android:layout_marginBottom="99dp"
+        android:src="@drawable/reset"
+        android:text="Reset" />
 
     <TextView
         android:id="@+id/secondCounterText"
@@ -242,7 +255,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginEnd="60dp"
+        android:layout_marginEnd="55dp"
         android:layout_marginBottom="152dp"
         android:background="@null"
         android:src="@drawable/rigth2" />
