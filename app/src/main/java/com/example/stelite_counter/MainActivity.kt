@@ -10,9 +10,11 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.InputType
 import android.view.View
 import android.widget.*
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
@@ -188,6 +190,29 @@ class MainActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>) {
                 // No hacer nada
             }
+        }
+
+        counterText.setOnClickListener {
+            val input = EditText(this)
+            input.inputType = InputType.TYPE_CLASS_NUMBER
+
+            AlertDialog.Builder(this)
+                .setTitle("Ingresar número")
+                .setView(input)
+                .setPositiveButton("Aceptar") { dialog, _ ->
+                    val enteredNumber = input.text.toString()
+                    if (enteredNumber.isNotEmpty()) {
+                        counterText.text = enteredNumber
+                        val data = "$enteredNumber,$secondCounter,none"
+                        sendValue(data)
+                    }
+
+                    dialog.dismiss()
+                }
+                .setNegativeButton("Cancelar") { dialog, _ ->
+                    dialog.cancel()
+                }
+                .show()
         }
 
         bluetoothStatusCircle.setOnClickListener {
