@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -30,10 +31,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var bluetoothStatusCircle: View
     private lateinit var bluetoothStatusText: ImageView
     private lateinit var bluetoothStatusCircletwo: View
-    private lateinit var incrementButton: ImageButton
-    private lateinit var decrementButton: ImageButton
-    private lateinit var increment10Button: ImageButton
-    private lateinit var decrement10Button: ImageButton
     private lateinit var testButton: Button
     private lateinit var resetButton: ImageView
     private lateinit var exportNpastaButton: Button
@@ -127,10 +124,6 @@ class MainActivity : AppCompatActivity() {
         secondCounterText = findViewById(R.id.secondCounterText)
         timeText = findViewById(R.id.timeText)
         dateText = findViewById(R.id.dateText)
-        incrementButton = findViewById(R.id.incrementButton)
-        decrementButton = findViewById(R.id.decrementButton)
-        increment10Button = findViewById(R.id.increment10Button)
-        decrement10Button = findViewById(R.id.decrement10Button)
         testButton = findViewById(R.id.testButton)
         resetButton = findViewById(R.id.resetButton)
         exportNpastaButton = findViewById(R.id.exportNpastaButton)
@@ -231,41 +224,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        incrementButton.setOnClickListener {
-            disableButtonsFor(1000)
-            counter++
-            updateCounter()
-            val data = "$counter,$secondCounter,none"
-            sendValue(data)
-        }
-
-        decrementButton.setOnClickListener {
-            disableButtonsFor(1000)
-            if (counter > 0) {
-                counter--
-                updateCounter()
-                val data = "$counter,$secondCounter,none"
-                sendValue(data)
-            }
-        }
-
-        increment10Button.setOnClickListener {
-            disableButtonsFor(1000)
-            counter += 10
-            updateCounter()
-            val data = "$counter,$secondCounter,none"
-            sendValue(data)
-        }
-
-        decrement10Button.setOnClickListener {
-            disableButtonsFor(1000)
-            if (counter >= 10) {
-                counter -= 10
-                updateCounter()
-                val data = "$counter,$secondCounter,none"
-                sendValue(data)
-            }
-        }
 
         testButton.setOnClickListener {
             disableButtonsFor(1000)
@@ -314,19 +272,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun disableButtonsFor(duration: Long) {
-        incrementButton.isEnabled = false
-        decrementButton.isEnabled = false
-        increment10Button.isEnabled = false
-        decrement10Button.isEnabled = false
         testButton.isEnabled = false
         resetButton.isEnabled = false
         exportNpastaButton.isEnabled = false
 
         Handler(Looper.getMainLooper()).postDelayed({
-            incrementButton.isEnabled = true
-            decrementButton.isEnabled = true
-            increment10Button.isEnabled = true
-            decrement10Button.isEnabled = true
             testButton.isEnabled = true
             resetButton.isEnabled = true
             exportNpastaButton.isEnabled = true
@@ -352,12 +302,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateSecondCounter() {
         secondCounterText.text = secondCounter.toString()
-        if (secondCounter > 7) {
+        if (secondCounter >= 7) {
             secondCounterText.setTextColor(getColor(android.R.color.holo_green_light))
+        } else if (secondCounter in 3..6) {
+            secondCounterText.setTextColor(Color.YELLOW)
         } else {
             secondCounterText.setTextColor(getColor(android.R.color.holo_red_light))
         }
-        secondCounter = 0
         Handler(Looper.getMainLooper()).postDelayed({
             updateSecondCounter()
         }, 1000)
