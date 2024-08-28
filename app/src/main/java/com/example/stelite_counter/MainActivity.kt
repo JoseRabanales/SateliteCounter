@@ -207,67 +207,59 @@ class MainActivity : AppCompatActivity() {
         }
 
         incrementButton.setOnClickListener {
-            Handler(Looper.getMainLooper()).postDelayed({
-                counter++
-                updateCounter()
-                val data = "$counter,$secondCounter,none"
-                sendValue(data)
-            }, 1000)
+            disableButtonsFor(1000)
+            counter++
+            updateCounter()
+            val data = "$counter,$secondCounter,none"
+            sendValue(data)
         }
 
         decrementButton.setOnClickListener {
-            Handler(Looper.getMainLooper()).postDelayed({
-                if (counter > 0) {
-                    counter--
-                    updateCounter()
-                    val data = "$counter,$secondCounter,none"
-                    sendValue(data)
-                }
-            }, 1000)
-        }
-
-        increment10Button.setOnClickListener {
-            Handler(Looper.getMainLooper()).postDelayed({
-                counter += 10
+            disableButtonsFor(1000)
+            if (counter > 0) {
+                counter--
                 updateCounter()
                 val data = "$counter,$secondCounter,none"
                 sendValue(data)
-            }, 1000)
+            }
+        }
+
+        increment10Button.setOnClickListener {
+            disableButtonsFor(1000)
+            counter += 10
+            updateCounter()
+            val data = "$counter,$secondCounter,none"
+            sendValue(data)
         }
 
         decrement10Button.setOnClickListener {
-            Handler(Looper.getMainLooper()).postDelayed({
-                if (counter >= 10) {
-                    counter -= 10
-                    updateCounter()
-                    val data = "$counter,$secondCounter,none"
-                    sendValue(data)
-                }
-            }, 1000)
+            disableButtonsFor(1000)
+            if (counter >= 10) {
+                counter -= 10
+                updateCounter()
+                val data = "$counter,$secondCounter,none"
+                sendValue(data)
+            }
         }
 
         testButton.setOnClickListener {
-            Handler(Looper.getMainLooper()).postDelayed({
-                val data = "$counter,$secondCounter,teste"
-                sendValue(data)
-            }, 1000)
+            disableButtonsFor(1000)
+            val data = "$counter,$secondCounter,teste"
+            sendValue(data)
         }
 
         resetButton.setOnClickListener {
-            Handler(Looper.getMainLooper()).postDelayed({
-
-                val data = "$counter,$secondCounter,reset"
-                sendValue(data)
-            }, 1000)
+            disableButtonsFor(1000)
+            val data = "$counter,$secondCounter,reset"
+            sendValue(data)
         }
 
         exportNpastaButton.setOnClickListener {
-            Handler(Looper.getMainLooper()).postDelayed({
-                val data = "$counter,$secondCounter,export"
-                sendValue(data)
-            }, 1000)
-
+            disableButtonsFor(1000)
+            val data = "$counter,$secondCounter,export"
+            sendValue(data)
         }
+
 
         val filter = IntentFilter().apply {
             addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
@@ -295,6 +287,27 @@ class MainActivity : AppCompatActivity() {
         // Initialize the second counter
         updateSecondCounter()
     }
+
+    private fun disableButtonsFor(duration: Long) {
+        incrementButton.isEnabled = false
+        decrementButton.isEnabled = false
+        increment10Button.isEnabled = false
+        decrement10Button.isEnabled = false
+        testButton.isEnabled = false
+        resetButton.isEnabled = false
+        exportNpastaButton.isEnabled = false
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            incrementButton.isEnabled = true
+            decrementButton.isEnabled = true
+            increment10Button.isEnabled = true
+            decrement10Button.isEnabled = true
+            testButton.isEnabled = true
+            resetButton.isEnabled = true
+            exportNpastaButton.isEnabled = true
+        }, duration)
+    }
+
 
     private fun updateUI(bluetoothEnabled: Boolean, device: String) {
         if (bluetoothEnabled) {
