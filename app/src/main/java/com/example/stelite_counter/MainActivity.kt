@@ -576,7 +576,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val REQUEST_ENABLE_BT = 1
+        const val REQUEST_ENABLE_BT = 1
     }
 
     override fun onDestroy() {

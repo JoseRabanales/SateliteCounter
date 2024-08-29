@@ -17,6 +17,9 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    buildFeatures{
+        viewBinding = true
+    }
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -48,4 +51,7 @@ dependencies {
 
     //lottie
     implementation (libs.lottie)
+
+    //recyclerview
+    implementation (libs.androidx.recyclerview)
 }
