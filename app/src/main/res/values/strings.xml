@@ -3,4 +3,6 @@
     <string name="enter_number">Ingrese numero</string>
     <string name="cancel">Cancelar</string>
     <string name="ok">OK</string>
+    <string name="bluetooth_disconnect">Você está off-line</string>
+    <string name="cotecia">Cotecia</string>
 </resources>
