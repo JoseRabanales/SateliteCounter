@@ -4,5 +4,8 @@
     <string name="cancel">Cancelar</string>
     <string name="ok">OK</string>
     <string name="bluetooth_disconnect">Você está off-line</string>
+    <string name="bluetooth_connect">Você está on-line</string>
     <string name="cotecia">Cotecia</string>
+    <string name="device_disconnect">Desconectar dispositivo</string>
+    <string name="device_connect">Conecte um dispositivo</string>
 </resources>
