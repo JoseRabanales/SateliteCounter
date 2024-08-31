@@ -8,4 +8,5 @@
     <string name="cotecia">Cotecia</string>
     <string name="device_disconnect">Desconectar dispositivo</string>
     <string name="device_connect">Conecte um dispositivo</string>
+    <string name="title_activity_maps">MapsActivity</string>
 </resources>

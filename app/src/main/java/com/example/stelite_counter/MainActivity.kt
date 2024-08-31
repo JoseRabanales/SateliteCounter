@@ -1,8 +1,10 @@
 package com.example.stelite_counter
 
+import BluetoothService
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -17,7 +19,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var exportNpastaButton: Button
     private lateinit var btnEnviar: Button
     private lateinit var backButton: Button
-    private lateinit var resetButton: Button
+    private lateinit var rebootButton: Button
     private lateinit var counterText: TextView
     private lateinit var inputNumberText: EditText
     private lateinit var secondCounterText: TextView
@@ -31,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         btnEnviar = findViewById(R.id.btnEnviar)
         secondCounterText = findViewById(R.id.secondCounterText)
         testButton = findViewById(R.id.testButton)
-        resetButton = findViewById(R.id.resetButton)
+        rebootButton = findViewById(R.id.rebootButton)
         exportNpastaButton = findViewById(R.id.exportNpastaButton)
         backButton = findViewById(R.id.backButton)
 
@@ -74,23 +76,29 @@ class MainActivity : AppCompatActivity() {
         }
 
         testButton.setOnClickListener {
+            if (testButton.text == "Reset"){
+                val data = "${BluetoothService.meters},${BluetoothService.sat},reset"
+                BluetoothService.sendData(data)
+                testButton.text = "Teste"
+            } else {
+                val data = "${BluetoothService.meters},${BluetoothService.sat},teste"
+                BluetoothService.sendData(data)
+
+            }
             disableButtonsFor(1000)
-            val data = "${BluetoothService.meters},${BluetoothService.sat},teste"
-            BluetoothService.sendData(data)
         }
 
-        resetButton.setOnClickListener {
+        rebootButton.setOnClickListener {
             disableButtonsFor(1000)
             val data = "${BluetoothService.meters},${BluetoothService.sat},reboot"
             BluetoothService.sendData(data)
         }
 
         exportNpastaButton.setOnClickListener {
-            disableButtonsFor(1000)
-            val data = "${BluetoothService.meters},${BluetoothService.sat},export"
-            BluetoothService.sendData(data)
+                disableButtonsFor(1000)
+                val data = "${BluetoothService.meters},${BluetoothService.sat},exportAndroid"
+                BluetoothService.sendData(data)
         }
-
         updateSecondCounter()
     }
 
@@ -110,12 +118,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun disableButtonsFor(duration: Long) {
         testButton.isEnabled = false
-        resetButton.isEnabled = false
+        rebootButton.isEnabled = false
         exportNpastaButton.isEnabled = false
 
         testButton.postDelayed({
             testButton.isEnabled = true
-            resetButton.isEnabled = true
+            rebootButton.isEnabled = true
             exportNpastaButton.isEnabled = true
         }, duration)
     }
@@ -124,6 +132,14 @@ class MainActivity : AppCompatActivity() {
         runOnUiThread {
             counterText.text = BluetoothService.meters
             secondCounterText.text = BluetoothService.sat
+
+            if (BluetoothService.action == "showReset") {
+                testButton.text = "Reset"
+                BluetoothService.action = "none"
+            } else if (BluetoothService.action == "pronto") {
+                Toast.makeText(this, "Pronto pa decolar.", Toast.LENGTH_SHORT).show()
+                BluetoothService.action = "none"
+            }
 
             updateSecondCounter()
         }
@@ -145,6 +161,8 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         const val REQUEST_ENABLE_BT = 1
+        const val REQUEST_WRITE_EXTERNAL_STORAGE = 2
+
     }
 
     override fun onDestroy() {

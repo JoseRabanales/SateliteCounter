@@ -30,6 +30,7 @@ class BluetoothScreen : AppCompatActivity() {
     private lateinit var backButton: Button
 
 
+
     private val requestBluetoothEnableLauncher: ActivityResultLauncher<Intent> =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (bluetoothAdapter.isEnabled) {
@@ -178,7 +179,13 @@ class BluetoothScreen : AppCompatActivity() {
                         val deviceName = view.findViewById<android.widget.TextView>(R.id.deviceName)
                         val icon = view.findViewById<android.widget.ImageView>(R.id.icon)
 
-                        deviceName.text = device?.name ?: "Dispositivo desconocido"
+                        val displayName = if (device?.name == "M5Stack_BLE") {
+                            "Aeroagri Device"
+                        } else {
+                            device?.name ?: "Dispositivo desconocido"
+                        }
+
+                        deviceName.text = displayName
                         icon.setImageResource(R.drawable.bluetooth_icon_resized)
 
                         return view
@@ -186,8 +193,8 @@ class BluetoothScreen : AppCompatActivity() {
                 }
 
                 pairedDevicesListView.adapter = adapter
-
-            } else {
+            }
+            else {
                 val noDevicesAdapter = ArrayAdapter(
                     this,
                     android.R.layout.simple_list_item_1,

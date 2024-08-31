@@ -38,7 +38,7 @@ class HomeSreen : AppCompatActivity() {
         }
 
         cardViewTrichograma.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
+            val intent = Intent(this, TechogramaScreen::class.java)
             startActivity(intent)
         }
 
