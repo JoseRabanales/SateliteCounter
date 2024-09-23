@@ -1,17 +1,25 @@
 package com.example.stelite_counter
 
+import AnimationDialog
 import BluetoothService
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
+import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
+import android.widget.FrameLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.airbnb.lottie.LottieAnimationView
 
 class MainActivity : AppCompatActivity() {
 
@@ -23,6 +31,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var counterText: TextView
     private lateinit var inputNumberText: EditText
     private lateinit var secondCounterText: TextView
+    private lateinit var lottieAnimationView: LottieAnimationView
+    private lateinit var lottieOverlay: FrameLayout
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,7 +48,20 @@ class MainActivity : AppCompatActivity() {
         exportNpastaButton = findViewById(R.id.exportNpastaButton)
         backButton = findViewById(R.id.backButton)
 
-        // Agregar un observador para actualizar la UI cuando cambien meters o sat en el BluetoothService
+        // Inflar el layout de la animación desde gears_animation.xml
+        val inflater = layoutInflater
+        val lottieLayout = inflater.inflate(R.layout.gears_animation, null)
+
+        // Agregar el layout inflado al root view del activity_main
+        val rootView = findViewById<ViewGroup>(android.R.id.content)
+        rootView.addView(lottieLayout)
+
+        // Inicializar las vistas de la animación
+        lottieOverlay = lottieLayout.findViewById(R.id.lottieOverlay)
+        lottieAnimationView = lottieLayout.findViewById(R.id.lottieAnimationView)
+
+
+
         BluetoothService.addObserver {
             updateUI()
         }
@@ -53,10 +77,8 @@ class MainActivity : AppCompatActivity() {
             finish()
         }
 
-        // Asegurarse de que los permisos necesarios están concedidos
         checkPermissions()
 
-        // Establecer listeners para los botones
         btnEnviar.setOnClickListener {
             val enteredNumber = inputNumberText.text.toString()
 
@@ -67,6 +89,13 @@ class MainActivity : AppCompatActivity() {
                     counterText.text = enteredNumber
                     val data = "$enteredNumber,${BluetoothService.sat},none"
                     BluetoothService.sendData(data)
+                    showLottieAnimation()
+
+                    inputNumberText.text.clear()
+
+                    val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(inputNumberText.windowToken, 0)
+
                 } else {
                     Toast.makeText(this, "El número debe estar entre 10 y 50", Toast.LENGTH_SHORT).show()
                 }
@@ -83,24 +112,36 @@ class MainActivity : AppCompatActivity() {
             } else {
                 val data = "${BluetoothService.meters},${BluetoothService.sat},teste"
                 BluetoothService.sendData(data)
-
             }
             disableButtonsFor(1000)
+            showLottieAnimation()
         }
 
         rebootButton.setOnClickListener {
             disableButtonsFor(1000)
             val data = "${BluetoothService.meters},${BluetoothService.sat},reboot"
             BluetoothService.sendData(data)
+            showLottieAnimation()
         }
 
         exportNpastaButton.setOnClickListener {
-                disableButtonsFor(1000)
-                val data = "${BluetoothService.meters},${BluetoothService.sat},exportAndroid"
-                BluetoothService.sendData(data)
+            disableButtonsFor(1000)
+            val data = "${BluetoothService.meters},${BluetoothService.sat},exportAndroid"
+            BluetoothService.sendData(data)
+            showLottieAnimation()
         }
         updateSecondCounter()
     }
+
+    private fun showLottieAnimation() {
+        lottieOverlay.visibility = View.VISIBLE
+        lottieAnimationView.playAnimation()
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            lottieOverlay.visibility = View.GONE
+        }, 5000)
+    }
+
 
     private fun checkPermissions() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED ||
