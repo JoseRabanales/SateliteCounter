@@ -13,6 +13,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.FrameLayout
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -33,6 +34,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var secondCounterText: TextView
     private lateinit var lottieAnimationView: LottieAnimationView
     private lateinit var lottieOverlay: FrameLayout
+    private lateinit var prontoButton: Button
+    private lateinit var metroText: TextView
+    private lateinit var EditTextLayout: LinearLayout
+
+    private var isAnimationDone = false
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,6 +54,11 @@ class MainActivity : AppCompatActivity() {
         rebootButton = findViewById(R.id.rebootButton)
         exportNpastaButton = findViewById(R.id.exportNpastaButton)
         backButton = findViewById(R.id.backButton)
+        prontoButton = findViewById(R.id.prontoButton)
+
+        metroText = findViewById(R.id.metroText)
+
+        EditTextLayout = findViewById(R.id.linearLayout)
 
         // Inflar el layout de la animación desde gears_animation.xml
         val inflater = layoutInflater
@@ -122,6 +134,29 @@ class MainActivity : AppCompatActivity() {
             val data = "${BluetoothService.meters},${BluetoothService.sat},reboot"
             BluetoothService.sendData(data)
             showLottieAnimation()
+        }
+
+        prontoButton.setOnClickListener {
+
+            if (!isAnimationDone) {
+                counterText.visibility = View.GONE
+                metroText.visibility = View.GONE
+                exportNpastaButton.visibility = View.GONE
+                rebootButton.visibility = View.GONE
+                EditTextLayout.visibility = View.GONE
+
+                prontoButton.animate()
+                    .translationYBy(-100f)
+                    .setDuration(600)
+                    .start()
+
+                isAnimationDone = true
+            }
+
+            val data = "${BluetoothService.meters},${BluetoothService.sat},pronto"
+            BluetoothService.sendData(data)
+
+            println(data)
         }
 
         exportNpastaButton.setOnClickListener {
