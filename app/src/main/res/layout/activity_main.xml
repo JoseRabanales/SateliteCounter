@@ -154,7 +154,7 @@
         android:layout_height="57dp"
         android:background="@drawable/back_background"
         android:gravity="center"
-        android:text="Configuração Cotecia"
+        android:text="CONFIGURAÇÃO COTESIA"
         android:textColor="@android:color/black"
         android:textSize="16sp"
         android:textStyle="bold"

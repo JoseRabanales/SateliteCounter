@@ -101,7 +101,6 @@ class MainActivity : AppCompatActivity() {
                     counterText.text = enteredNumber
                     val data = "$enteredNumber,${BluetoothService.sat},none"
                     BluetoothService.sendData(data)
-                    showLottieAnimation()
 
                     inputNumberText.text.clear()
 
@@ -126,14 +125,12 @@ class MainActivity : AppCompatActivity() {
                 BluetoothService.sendData(data)
             }
             disableButtonsFor(1000)
-            showLottieAnimation()
         }
 
         rebootButton.setOnClickListener {
             disableButtonsFor(1000)
             val data = "${BluetoothService.meters},${BluetoothService.sat},reboot"
             BluetoothService.sendData(data)
-            showLottieAnimation()
         }
 
         prontoButton.setOnClickListener {
@@ -163,18 +160,8 @@ class MainActivity : AppCompatActivity() {
             disableButtonsFor(1000)
             val data = "${BluetoothService.meters},${BluetoothService.sat},exportAndroid"
             BluetoothService.sendData(data)
-            showLottieAnimation()
         }
         updateSecondCounter()
-    }
-
-    private fun showLottieAnimation() {
-        lottieOverlay.visibility = View.VISIBLE
-        lottieAnimationView.playAnimation()
-
-        Handler(Looper.getMainLooper()).postDelayed({
-            lottieOverlay.visibility = View.GONE
-        }, 5000)
     }
 
 
