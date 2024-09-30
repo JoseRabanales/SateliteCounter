@@ -153,7 +153,6 @@ class MainActivity : AppCompatActivity() {
             val data = "${BluetoothService.meters},${BluetoothService.sat},pronto"
             BluetoothService.sendData(data)
 
-            println(data)
         }
 
         exportNpastaButton.setOnClickListener {
