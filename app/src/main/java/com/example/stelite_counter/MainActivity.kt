@@ -95,9 +95,7 @@ class MainActivity : AppCompatActivity() {
             val enteredNumber = inputNumberText.text.toString()
 
             if (enteredNumber.isNotEmpty()) {
-                val number = enteredNumber.toIntOrNull()
 
-                if (number != null && number in 10..50) {
                     counterText.text = enteredNumber
                     val data = "$enteredNumber,${BluetoothService.sat},none"
                     BluetoothService.sendData(data)
@@ -107,9 +105,6 @@ class MainActivity : AppCompatActivity() {
                     val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
                     imm.hideSoftInputFromWindow(inputNumberText.windowToken, 0)
 
-                } else {
-                    Toast.makeText(this, "El número debe estar entre 10 y 50", Toast.LENGTH_SHORT).show()
-                }
             } else {
                 Toast.makeText(this, "Por favor ingrese un número", Toast.LENGTH_SHORT).show()
             }
