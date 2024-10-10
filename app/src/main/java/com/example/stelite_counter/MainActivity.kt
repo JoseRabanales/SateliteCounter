@@ -137,11 +137,6 @@ class MainActivity : AppCompatActivity() {
                 rebootButton.visibility = View.GONE
                 EditTextLayout.visibility = View.GONE
 
-                prontoButton.animate()
-                    .translationYBy(-100f)
-                    .setDuration(600)
-                    .start()
-
                 isAnimationDone = true
             }
 
