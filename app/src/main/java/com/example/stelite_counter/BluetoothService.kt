@@ -186,10 +186,10 @@ object BluetoothService {
 
                             // Verificar si es la característica TX
                             if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_WRITE != 0) {
-                                txCharacteristic = characteristic
-                                UUIDCharRX =
+                                rxCharacteristic = characteristic
+                                UUIDCharTX =
                                     characteristic.uuid  // Asignar la característica TX a la variable global
-                                UUIDServiceRX =
+                                UUIDCharTX =
                                     service.uuid  // Asignar el servicio a la variable global
                                 println("  -> Característica TX encontrada")
                             }
@@ -197,10 +197,10 @@ object BluetoothService {
                             if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY != 0 ||
                                 characteristic.properties and BluetoothGattCharacteristic.PROPERTY_READ != 0
                             ) {
-                                rxCharacteristic = characteristic
-                                UUIDCharTX =
+                                txCharacteristic = characteristic
+                                UUIDServiceRX =
                                     characteristic.uuid  // Asignar la característica RX a la variable global
-                                UUIDServiceTX =
+                                UUIDServiceRX =
                                     service.uuid  // Asignar el servicio a la variable global
                                 println("  -> Característica RX encontrada")
                             }

@@ -27,7 +27,7 @@ class HomeSreen : AppCompatActivity() {
     private lateinit var cardViewTrichograma: CardView
     private lateinit var cardView: CardView
 
-    private val bluetoothReceiver = object : BroadcastReceiver() {
+    /*private val bluetoothReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val action = intent?.action
             if (action == BluetoothDevice.ACTION_ACL_CONNECTED) {
@@ -44,6 +44,7 @@ class HomeSreen : AppCompatActivity() {
             }
         }
     }
+     */
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,8 +56,10 @@ class HomeSreen : AppCompatActivity() {
         imagecoteciaImageView = findViewById(R.id.imagecoteciaImageView)
         cardView = findViewById(R.id.cardView)
 
+        /*
         val filter = IntentFilter(BluetoothDevice.ACTION_ACL_CONNECTED)
         registerReceiver(bluetoothReceiver, filter)
+         */
 
         checkBluetoothPermissions()
         updateUI()
@@ -120,7 +123,6 @@ class HomeSreen : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        unregisterReceiver(bluetoothReceiver)
         BluetoothService.removeObserver { updateUI() }
     }
 
