@@ -17,34 +17,35 @@
             android:id="@+id/backButton"
             android:layout_width="70dp"
             android:layout_height="30dp"
-            android:layout_marginTop="16dp"
             android:background="@drawable/back_background"
-            android:drawableStart="?attr/actionModeCloseDrawable"
+            android:drawableLeft="?attr/actionModeCloseDrawable"
             android:drawablePadding="4dp"
             android:gravity="center"
             android:padding="8dp"
             android:text=""
             app:layout_constraintBottom_toTopOf="@+id/cardViewCotecia"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.05"
+            app:layout_constraintHorizontal_bias="0.03"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.0" />
+            app:layout_constraintVertical_bias="0.444" />
 
         <androidx.cardview.widget.CardView
             android:id="@+id/cardViewCotecia"
-            android:layout_width="375dp"
-            android:layout_height="202dp"
+            android:layout_width="750dp"
+            android:layout_height="250dp"
             android:layout_margin="10dp"
             app:cardBackgroundColor="@color/white"
             app:cardCornerRadius="15dp"
             app:cardElevation="10dp"
             app:cardMaxElevation="12dp"
             app:cardPreventCornerOverlap="true"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.50"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/backButton">
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.097">
 
             <ImageView
                 android:layout_width="match_parent"
@@ -57,8 +58,8 @@
         <TextView
             android:id="@+id/satText"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_height="24sp"
+            android:layout_marginTop="4dp"
             android:text="Satélites detectados:  "
             android:textAlignment="center"
             android:textColor="@android:color/black"
@@ -67,31 +68,34 @@
             app:layout_constraintStart_toEndOf="@+id/lottieAnimationView2"
             app:layout_constraintTop_toBottomOf="@+id/textView" />
 
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottieAnimationView2"
+            android:layout_width="20dp"
+            android:layout_height="18dp"
+            app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.106"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView"
+            app:layout_constraintVertical_bias="0.294"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"
+            app:lottie_rawRes="@raw/antena" />
 
         <TextView
             android:id="@+id/secondCounterText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginStart="4dp"
             android:text="0"
             android:textColor="@android:color/black"
             android:textSize="15sp"
             android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/linearLayout"
             app:layout_constraintStart_toEndOf="@+id/satText"
-            app:layout_constraintTop_toBottomOf="@+id/textView" />
-
-        <com.airbnb.lottie.LottieAnimationView
-            android:id="@+id/lottieAnimationView2"
-            android:layout_width="20dp"
-            android:layout_height="18dp"
-            android:layout_marginTop="10dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.048"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView"
-            app:lottie_autoPlay="true"
-            app:lottie_loop="true"
-            app:lottie_rawRes="@raw/antena" />
+            app:layout_constraintVertical_bias="0.161" />
+
 
         <Button
             android:id="@+id/testButton"
@@ -103,25 +107,26 @@
             android:textStyle="bold"
             app:layout_constraintBottom_toTopOf="@+id/linearLayout"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.892"
+            app:layout_constraintHorizontal_bias="0.816"
             app:layout_constraintStart_toEndOf="@+id/secondCounterText"
             app:layout_constraintTop_toBottomOf="@+id/textView"
-            app:layout_constraintVertical_bias="0.379" />
+            app:layout_constraintVertical_bias="0.25" />
 
         <LinearLayout
             android:id="@+id/linearLayout"
-            android:layout_width="375dp"
-            android:layout_height="65dp"
+            android:layout_width="750dp"
+            android:layout_height="66dp"
             android:layout_margin="16dp"
             android:background="@drawable/rounded_edittext"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:padding="8dp"
-            app:layout_constraintBottom_toTopOf="@+id/counterText"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.527"
+            app:layout_constraintHorizontal_bias="0.461"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/satText">
+            app:layout_constraintTop_toBottomOf="@+id/satText"
+            app:layout_constraintVertical_bias="0.0">
 
             <EditText
                 android:id="@+id/inputNumberText"
@@ -147,9 +152,8 @@
 
         <TextView
             android:id="@+id/textView"
-            android:layout_width="374dp"
-            android:layout_height="57dp"
-            android:layout_marginTop="8dp"
+            android:layout_width="750dp"
+            android:layout_height="58dp"
             android:background="@drawable/back_background"
             android:gravity="center"
             android:text="CONFIGURAÇÃO COTESIA"
@@ -159,7 +163,7 @@
             app:circularflow_radiusInDP="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.513"
+            app:layout_constraintHorizontal_bias="0.50"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/cardViewCotecia"
             app:layout_constraintVertical_bias="0.055" />
@@ -172,64 +176,63 @@
             android:textAlignment="center"
             android:textSize="60sp"
             android:textStyle="bold"
-            app:layout_constraintBottom_toTopOf="@+id/metroText"
+            app:layout_constraintBottom_toTopOf="@+id/exportNpastaButton"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+            app:layout_constraintVertical_bias="0.264" />
 
         <TextView
             android:id="@+id/metroText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
             android:text="Metros"
             android:textAlignment="center"
             android:textColor="@android:color/black"
             android:textSize="15sp"
-            app:layout_constraintBottom_toTopOf="@+id/exportNpastaButton"
+            app:layout_constraintBottom_toTopOf="@+id/rebootButton"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/counterText"
-            app:layout_constraintVertical_bias="0.127" />
+            app:layout_constraintTop_toBottomOf="@+id/counterText" />
 
         <Button
             android:id="@+id/exportNpastaButton"
-            android:layout_width="377dp"
+            android:layout_width="250dp"
             android:layout_height="60dp"
-            android:layout_marginTop="68dp"
-            android:layout_marginBottom="8dp"
             android:background="@drawable/button_background"
             android:text="Extrair Coordenadas"
             android:textStyle="bold"
-            app:layout_constraintBottom_toTopOf="@+id/rebootButton"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.50"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/rebootButton"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/metroText" />
+            app:layout_constraintTop_toBottomOf="@+id/metroText"
+            app:layout_constraintVertical_bias="0.529" />
 
         <Button
             android:id="@+id/rebootButton"
-            android:layout_width="377dp"
+            android:layout_width="250dp"
             android:layout_height="60dp"
-            android:layout_marginBottom="8dp"
             android:background="@drawable/button_background_red"
             android:text="Reiniciar Sistema"
             android:textStyle="bold"
-            app:layout_constraintBottom_toTopOf="@+id/prontoButton"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/exportNpastaButton" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/prontoButton"
+            app:layout_constraintStart_toEndOf="@+id/exportNpastaButton"
+            app:layout_constraintTop_toBottomOf="@+id/metroText" />
 
         <Button
             android:id="@+id/prontoButton"
-            android:layout_width="377dp"
+            android:layout_width="250dp"
             android:layout_height="60dp"
             android:background="@drawable/button_background_green"
             android:text="Pronto"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.47"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/rebootButton" />
+            app:layout_constraintHorizontal_bias="0.042"
+            app:layout_constraintStart_toEndOf="@+id/rebootButton"
+            app:layout_constraintTop_toBottomOf="@+id/metroText"
+            app:layout_constraintVertical_bias="0.529" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
